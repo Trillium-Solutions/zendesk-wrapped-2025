@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zendesk Wrapped 2025 - Analytics Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Loading Zendesk Data...</p>
+    </div>
+
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <h1 class="title">
+                    <span class="title-main">Zendesk Wrapped</span>
+                    <span class="title-year">2025</span>
+                </h1>
+                <p class="subtitle">Interactive Analytics Dashboard</p>
+            </div>
+
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label for="dateRangeStart">Date Range</label>
+                    <div class="date-inputs">
+                        <input type="date" id="dateRangeStart" class="filter-input">
+                        <span class="date-separator">to</span>
+                        <input type="date" id="dateRangeEnd" class="filter-input">
+                    </div>
+                </div>
+
+                <div class="filter-group">
+                    <label for="assigneeFilter">Assignee</label>
+                    <select id="assigneeFilter" class="filter-input" multiple>
+                        <option value="all" selected>All Assignees</option>
+                    </select>
+                </div>
+
+                <button class="btn-reset" id="resetFilters">Reset Filters</button>
+            </div>
+        </header>
+
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="tickets">
+                <span class="tab-icon">🎫</span>
+                <span class="tab-label">Tickets & Assignees</span>
+            </button>
+            <button class="tab-btn" data-tab="efficiency">
+                <span class="tab-icon">⚡</span>
+                <span class="tab-label">Efficiency</span>
+            </button>
+        </nav>
+
+        <!-- Tickets & Assignees Section -->
+        <section class="tab-content active" id="tickets">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon">📊</div>
+                    <div class="metric-content">
+                        <h3 class="metric-label">Total Tickets</h3>
+                        <p class="metric-value" id="totalTickets">-</p>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">✅</div>
+                    <div class="metric-content">
+                        <h3 class="metric-label">Solved Tickets</h3>
+                        <p class="metric-value" id="solvedTickets">-</p>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">⏱️</div>
+                    <div class="metric-content">
+                        <h3 class="metric-label">Avg Daily Tickets</h3>
+                        <p class="metric-value" id="avgDailyTickets">-</p>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">📈</div>
+                    <div class="metric-content">
+                        <h3 class="metric-label">Peak Day</h3>
+                        <p class="metric-value" id="peakDay">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card large">
+                    <h3 class="chart-title">Tickets Created Over Time</h3>
+                    <canvas id="ticketsOverTimeChart"></canvas>
+                </div>
+
+                <div class="chart-card">
+                    <h3 class="chart-title">Tickets by Hour</h3>
+                    <canvas id="ticketsByHourChart"></canvas>
+                </div>
+
+                <div class="chart-card">
+                    <h3 class="chart-title">Tickets by Day of Week</h3>
+                    <canvas id="ticketsByDayChart"></canvas>
+                </div>
+
+                <div class="chart-card">
+                    <h3 class="chart-title">Ticket Channel</h3>
+                    <canvas id="ticketChannelChart"></canvas>
+                </div>
+
+                <div class="chart-card large">
+                    <h3 class="chart-title">Solved Tickets by Assignee</h3>
+                    <canvas id="assigneeTicketsChart"></canvas>
+                </div>
+
+                <div class="chart-card large">
+                    <h3 class="chart-title">Assignee Performance Metrics</h3>
+                    <div class="table-container">
+                        <table class="data-table" id="assigneeTable">
+                            <thead>
+                                <tr>
+                                    <th>Assignee</th>
+                                    <th>Solved</th>
+                                    <th>First Reply (hrs)</th>
+                                    <th>Resolution (hrs)</th>
+                                    <th>Satisfaction %</th>
+                                    <th>One-Touch %</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3 class="chart-title">Wait Time by Assignee</h3>
+                    <canvas id="waitTimeChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Efficiency Section -->
+        <section class="tab-content" id="efficiency">
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-icon">⏰</div>
+                    <div class="metric-content">
+                        <h3 class="metric-label">Median First Reply</h3>
+                        <p class="metric-value" id="medianFirstReply">-</p>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">🎯</div>
+                    <div class="metric-content">
+                        <h3 class="metric-label">Median Resolution</h3>
+                        <p class="metric-value" id="medianResolution">-</p>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">💬</div>
+                    <div class="metric-content">
+                        <h3 class="metric-label">Avg Agent Replies</h3>
+                        <p class="metric-value" id="avgAgentReplies">-</p>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-icon">🔄</div>
+                    <div class="metric-content">
+                        <h3 class="metric-label">Avg Stations</h3>
+                        <p class="metric-value" id="avgStations">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-card large">
+                    <h3 class="chart-title">Response & Resolution Time Trends</h3>
+                    <canvas id="efficiencyTrendsChart"></canvas>
+                </div>
+
+                <div class="chart-card">
+                    <h3 class="chart-title">Agent Replies Distribution</h3>
+                    <canvas id="agentRepliesChart"></canvas>
+                </div>
+
+                <div class="chart-card">
+                    <h3 class="chart-title">Resolution Time Brackets</h3>
+                    <canvas id="resolutionBracketsChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+
+    </div>
+
+    <script src="data-loader.js"></script>
+    <script src="charts.js"></script>
+    <script src="filters.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
