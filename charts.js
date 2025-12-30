@@ -32,7 +32,7 @@ const Charts = {
 
     // Color schemes
     colors: {
-        primary: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe'],
+        primary: ['rgba(102, 126, 234, 0.8)', 'rgba(240, 147, 251, 0.8)', 'rgba(79, 172, 254, 0.8)', 'rgba(67, 233, 123, 0.8)', 'rgba(250, 112, 154, 0.8)', 'rgba(0, 242, 254, 0.8)'],
         gradient: [
             { start: '#667eea', end: '#764ba2' },
             { start: '#f093fb', end: '#f5576c' },
@@ -69,6 +69,10 @@ const Charts = {
         const tickets = data.map(row => parseFloat(row['Tickets']) || 0);
         const solved = data.map(row => parseFloat(row['Solved tickets']) || 0);
 
+        const ctx_raw = ctx.getContext('2d');
+        const gradient1 = this.createGradient(ctx_raw, 'rgba(102, 126, 234, 0.3)', 'rgba(102, 126, 234, 0.0)');
+        const gradient2 = this.createGradient(ctx_raw, 'rgba(67, 233, 123, 0.3)', 'rgba(67, 233, 123, 0.0)');
+
         this.instances['ticketsOverTimeChart'] = new Chart(ctx, {
             type: 'line',
             data: {
@@ -78,8 +82,11 @@ const Charts = {
                         label: 'Created',
                         data: tickets,
                         borderColor: '#667eea',
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        backgroundColor: gradient1,
                         borderWidth: 3,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: 'rgba(255, 255, 255, 0.2)',
+                        pointHoverBackgroundColor: '#fff',
                         fill: true,
                         tension: 0.4
                     },
@@ -87,8 +94,11 @@ const Charts = {
                         label: 'Solved',
                         data: solved,
                         borderColor: '#43e97b',
-                        backgroundColor: 'rgba(67, 233, 123, 0.1)',
+                        backgroundColor: gradient2,
                         borderWidth: 3,
+                        pointBackgroundColor: '#43e97b',
+                        pointBorderColor: 'rgba(255, 255, 255, 0.2)',
+                        pointHoverBackgroundColor: '#fff',
                         fill: true,
                         tension: 0.4
                     }
@@ -161,7 +171,7 @@ const Charts = {
         if (!ctx) return;
 
         const days = data.map(row => row['Ticket created - Day of week']);
-        const tickets = data.map(row => parseFloat(row['Tickets']) || 0);
+        const tickets = data.map(row => parseFloat(row['Tickets created - Daily average']) || 0);
 
         this.instances['ticketsByDayChart'] = new Chart(ctx, {
             type: 'bar',
@@ -208,7 +218,9 @@ const Charts = {
                 datasets: [{
                     data: percentages,
                     backgroundColor: this.colors.primary,
-                    borderWidth: 0
+                    borderColor: 'rgba(25, 25, 35, 1)',
+                    borderWidth: 2,
+                    hoverOffset: 10
                 }]
             },
             options: {
@@ -247,6 +259,10 @@ const Charts = {
         const firstReply = data.map(row => parseFloat(row['MED(Full resolution time (hrs))']) || 0);
         const resolution = data.map(row => parseFloat(row['MED(Requester wait time (hrs))']) || 0);
 
+        const ctx_raw = ctx.getContext('2d');
+        const gradient1 = this.createGradient(ctx_raw, 'rgba(79, 172, 254, 0.3)', 'rgba(79, 172, 254, 0.0)');
+        const gradient2 = this.createGradient(ctx_raw, 'rgba(240, 147, 251, 0.3)', 'rgba(240, 147, 251, 0.0)');
+
         this.instances['efficiencyTrendsChart'] = new Chart(ctx, {
             type: 'line',
             data: {
@@ -256,8 +272,11 @@ const Charts = {
                         label: 'First Reply Time (hrs)',
                         data: firstReply,
                         borderColor: '#4facfe',
-                        backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                        backgroundColor: gradient1,
                         borderWidth: 3,
+                        pointBackgroundColor: '#4facfe',
+                        pointBorderColor: 'rgba(255, 255, 255, 0.2)',
+                        pointHoverBackgroundColor: '#fff',
                         fill: true,
                         tension: 0.4
                     },
@@ -265,8 +284,11 @@ const Charts = {
                         label: 'Resolution Time (hrs)',
                         data: resolution,
                         borderColor: '#f093fb',
-                        backgroundColor: 'rgba(240, 147, 251, 0.1)',
+                        backgroundColor: gradient2,
                         borderWidth: 3,
+                        pointBackgroundColor: '#f093fb',
+                        pointBorderColor: 'rgba(255, 255, 255, 0.2)',
+                        pointHoverBackgroundColor: '#fff',
                         fill: true,
                         tension: 0.4
                     }
@@ -302,6 +324,7 @@ const Charts = {
 
         const brackets = data.map(row => row['Agent replies brackets']);
         const tickets = data.map(row => parseFloat(row['COUNT(Solved tickets)']) || 0);
+        const uniqueTickets = data.map(row => parseFloat(row['D_COUNT(Solved tickets)']) || 0);
 
         this.instances['agentRepliesChart'] = new Chart(ctx, {
             type: 'doughnut',
@@ -315,7 +338,28 @@ const Charts = {
             },
             options: {
                 ...this.defaultOptions,
-                cutout: '60%'
+                cutout: '60%',
+                plugins: {
+                    ...this.defaultOptions.plugins,
+                    tooltip: {
+                        ...this.defaultOptions.plugins.tooltip,
+                        callbacks: {
+                            label: function (context) {
+                                const index = context.dataIndex;
+                                const bracket = brackets[index];
+                                const dCount = uniqueTickets[index];
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+
+                                return [
+                                    `${percentage}% of solved tickets`,
+                                    `${dCount} tickets solved after ${bracket} agent replies`
+                                ];
+                            }
+                        }
+                    }
+                }
             }
         });
     },

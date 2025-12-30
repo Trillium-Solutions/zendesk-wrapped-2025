@@ -12,6 +12,9 @@ const App = {
             // Load all data
             this.data = await DataLoader.loadAll();
 
+            // Initialize background particles
+            this.initParticles();
+
             // Initialize filters
             Filters.init();
 
@@ -26,6 +29,16 @@ const App = {
 
             // Initial dashboard update
             this.updateDashboard();
+
+            // Setup Start Wrapped button
+            const wrappedBtn = document.getElementById('startWrapped');
+            if (wrappedBtn) {
+                wrappedBtn.addEventListener('click', () => {
+                    if (window.StoryMode) {
+                        window.StoryMode.start(this.data);
+                    }
+                });
+            }
 
             // Hide loading overlay
             this.hideLoading();
@@ -53,7 +66,6 @@ const App = {
             }, 500);
         }
     },
-
     // Show error message
     showError(message) {
         const overlay = document.getElementById('loadingOverlay');
@@ -64,6 +76,33 @@ const App = {
                     <p>${message}</p>
                 </div>
             `;
+        }
+    },
+
+    // Initialize background particles
+    initParticles() {
+        const container = document.getElementById('bgParticles');
+        if (!container) return;
+
+        const particleCount = 20;
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+
+            const size = Math.random() * 5 + 2;
+            const duration = Math.random() * 20 + 20;
+            const delay = Math.random() * -40;
+            const left = Math.random() * 100;
+            const top = Math.random() * 100;
+
+            particle.style.width = `${size}px`;
+            particle.style.height = `${size}px`;
+            particle.style.left = `${left}%`;
+            particle.style.top = `${top}%`;
+            particle.style.setProperty('--duration', `${duration}s`);
+            particle.style.setProperty('--delay', `${delay}s`);
+
+            container.appendChild(particle);
         }
     },
 

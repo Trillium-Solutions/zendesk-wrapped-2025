@@ -12,9 +12,11 @@
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
 </head>
 
 <body>
+    <div class="bg-particles" id="bgParticles"></div>
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-spinner"></div>
         <p class="loading-text">Loading Zendesk Data...</p>
@@ -48,6 +50,7 @@
                 </div>
 
                 <button class="btn-reset" id="resetFilters">Reset Filters</button>
+                <button class="btn-wrapped" id="startWrapped">✨ Start Wrapped</button>
             </div>
         </header>
 
@@ -201,10 +204,45 @@
 
     </div>
 
+    <!-- Music Player -->
+    <div class="music-player-container" id="musicPlayer">
+        <div class="music-player-toggle" id="musicToggle">
+            <span class="music-icon">🎵</span>
+        </div>
+        <div class="music-player-content">
+            <div class="music-player-header">
+                <span class="music-title">Background Music</span>
+                <button class="music-close" id="musicClose">&times;</button>
+            </div>
+            <div class="music-controls">
+                <button id="prevTrack" class="control-btn">⏮</button>
+                <button id="playPauseMusic" class="control-btn play">▶</button>
+                <button id="nextTrack" class="control-btn">⏭</button>
+            </div>
+            <div class="music-track-info">
+                <select id="trackSelector" class="track-select">
+                    <option value="">Select a track...</option>
+                </select>
+            </div>
+            <div class="music-volume">
+                <span>🔈</span>
+                <input type="range" id="musicVolume" min="0" max="100" value="50">
+                <span>🔊</span>
+            </div>
+            <div class="music-custom">
+                <input type="text" id="customYoutubeUrl" placeholder="Paste YouTube URL/ID...">
+                <button id="loadCustomTrack" class="btn-load">Load</button>
+            </div>
+        </div>
+        <div id="youtubePlayer" style="display: none;"></div>
+    </div>
+
     <script src="data-loader.js"></script>
     <script src="charts.js"></script>
     <script src="filters.js"></script>
     <script src="app.js"></script>
+    <script src="music-player.js"></script>
+    <script src="story-mode.js"></script>
 </body>
 
 </html>
